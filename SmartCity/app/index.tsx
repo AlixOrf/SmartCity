@@ -4,6 +4,7 @@ import MapView, { Marker, PROVIDER_DEFAULT, PROVIDER_GOOGLE } from 'react-native
 import * as Location from 'expo-location';
 import { useNavigation } from 'expo-router';
 import { markers } from '../assets/markers'
+import Navbar from '../components/navbar';
 
 export default function App() {
   const [location, setLocation] = useState<null | { latitude: number; longitude: number }>(null);
@@ -110,6 +111,9 @@ export default function App() {
     </MapView>
 
       {errorMsg ? <Text>{errorMsg}</Text> : null}
+
+      <Navbar />
     </View>
   );
 }
+
