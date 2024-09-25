@@ -82,6 +82,9 @@ export default function App() {
       "stylers": [{ "visibility": "off" }]
     }
   ]
+
+  const MAX_DISTANCE = 500;
+  
   return (
     <View style={{ flex: 1 }}>
 
@@ -92,7 +95,8 @@ export default function App() {
       showsMyLocationButton={false} 
       customMapStyle={mapStyle}  
       ref={mapRef}
-      toolbarEnabled={false}  
+      toolbarEnabled={false}
+      mapPadding={{ top: 0, left: 50, right: 0, bottom: 20 }}
     >
       {markers.map((marker, index) => (
         <Marker key={index} coordinate={marker} onPress={() => onMarkerSelected(marker)} />
@@ -116,4 +120,3 @@ export default function App() {
     </View>
   );
 }
-
