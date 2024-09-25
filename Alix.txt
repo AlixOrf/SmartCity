@@ -5,3 +5,9 @@ npx expo install react-native-maps
 npx expo install expo-location
 
 lancement app --> npx expo
+
+25/09 11H15 --> Data
+
+python3 -m venv .venv
+.venv\Scripts\activate
+python3 -m pip install -r requirements.txt
