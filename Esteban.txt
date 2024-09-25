@@ -1,0 +1,6 @@
+npx create-expo-app@latest
+
+cd my-app
+npx expo start
+
+npm install @react-navigation/native
