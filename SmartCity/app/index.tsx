@@ -47,11 +47,17 @@ export default function App() {
   useEffect(() => {
     navigation.setOptions({
       headerRight: () => (
-        <TouchableOpacity onPress={focusMap}>
-          <View style={{ padding: 10 }}>
-            <Text>Focus</Text>
-          </View>
+        <TouchableOpacity style={styles.focusButton} onPress={() => {
+          if (filteredMarkers.length === 1) {
+            const { latitude, longitude } = filteredMarkers[0];
+            focusMap(latitude, longitude);
+          } else {
+            Alert.alert('Sélectionnez un musée spécifique pour centrer.');
+          }
+        }}>
+          <Text>Focus</Text>
         </TouchableOpacity>
+        
       ),
     });
   }, []);
@@ -59,25 +65,31 @@ export default function App() {
   // Fonction pour mettre à jour la recherche
   const updateSearch = (searchText: string) => {
     setSearch(searchText);
-
-    // Filtrer les markers par nom
+  
+    // Filtrer les markers pour trouver ceux qui correspondent à la recherche
     const filtered = info.filter(marker => {
       const markerName = marker.name ? marker.name.toLowerCase() : '';
       return markerName.includes(searchText.toLowerCase());
     });
-
+  
     setFilteredMarkers(filtered);
+  
+    // Si un seul résultat, recentrer la carte sur ce musée
+    if (filtered.length === 1) {
+      const { latitude, longitude } = filtered[0];
+      focusMap(latitude, longitude);
+    }
   };
+  
+  
 
-  const focusMap = () => {
-    const là = {
-      latitude: 48.8566,
-      longitude: 2.3522,
-      latitudeDelta: 2,
-      longitudeDelta: 2,
-    };
-    mapRef.current?.animateCamera({ center: là, zoom: 10 }, { duration: 3000 });
-  };
+  const focusMap = (latitude: number, longitude: number) => {
+  mapRef.current?.animateCamera({
+    center: { latitude, longitude },
+    zoom: 15, // Ajuster le niveau de zoom selon tes préférences
+  }, { duration: 1000 }); // Ajuster la durée d’animation
+};
+
 
   const onMarkerSelected = (marker: any) => {
     setSelectedMarker(marker);
@@ -121,14 +133,15 @@ export default function App() {
     <View style={{ flex: 1 }}>
       {/* Barre de recherche */}
       <SearchBar
-        placeholder="Rechercher..."
-        onChangeText={updateSearch}
-        value={search}
-        lightTheme
-        round
-        containerStyle={styles.searchBarContainer}
-        inputContainerStyle={styles.searchInputContainer}
-      />
+      placeholder="Rechercher..."
+      onChangeText={updateSearch} // Appelle la fonction updateSearch
+      value={search}
+      lightTheme
+      round
+      containerStyle={styles.searchBarContainer}
+      inputContainerStyle={styles.searchInputContainer}
+    />
+
 
       <MapView
         style={{ flex: 1 }}
@@ -208,5 +221,18 @@ const styles = StyleSheet.create({
   },
   searchInputContainer: {
     backgroundColor: '#fff',
+  },
+  focusButton: {
+    position: 'absolute',
+    bottom: 20,
+    left: 20,
+    backgroundColor: '#007AFF',
+    padding: 10,
+    borderRadius: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.5,
+    shadowRadius: 2,
+    elevation: 5,
   },
 });
