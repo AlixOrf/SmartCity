@@ -1,8 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, TouchableOpacity, Image, StyleSheet, Alert } from 'react-native';
+import { View, TouchableOpacity, Image, StyleSheet, Alert } from 'react-native';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import * as Location from 'expo-location';
-import { useNavigation } from '@react-navigation/native';
 import { info } from '../assets/infodata';
 import Navbar from '../components/navbar';
 import PlusInfo from '../components/plusinfo';
@@ -11,15 +10,13 @@ import { SearchBar } from 'react-native-elements'; // Import de la Search Bar
 
 export default function App() {
   const [location, setLocation] = useState<null | { latitude: number; longitude: number }>(null);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [selectedMarker, setSelectedMarker] = useState<any>(null);
   const [modalVisible, setModalVisible] = useState<boolean>(false);
-  const [isPopupVisible, setPopupVisible] = useState<boolean>(false); // État pour gérer la visibilité de la popup Ajout
-  const [search, setSearch] = useState(''); // Initialiser dans app pour Search bar
-  const [filteredMarkers, setFilteredMarkers] = useState(info); // Initialisation avec les markers
+  const [isPopupVisible, setPopupVisible] = useState<boolean>(false);
+  const [search, setSearch] = useState('');
+  const [filteredMarkers, setFilteredMarkers] = useState(info);
 
   const mapRef = useRef<any>();
-  const navigation = useNavigation();
 
   const INITIAL_REGION = {
     latitude: 48.8566,
@@ -32,7 +29,7 @@ export default function App() {
     (async () => {
       let { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
-        setErrorMsg('Permission to access location was denied');
+        Alert.alert('Permission to access location was denied');
         return;
       }
 
@@ -44,29 +41,9 @@ export default function App() {
     })();
   }, []);
 
-  useEffect(() => {
-    navigation.setOptions({
-      headerRight: () => (
-        <TouchableOpacity style={styles.focusButton} onPress={() => {
-          if (filteredMarkers.length === 1) {
-            const { latitude, longitude } = filteredMarkers[0];
-            focusMap(latitude, longitude);
-          } else {
-            Alert.alert('Sélectionnez un musée spécifique pour centrer.');
-          }
-        }}>
-          <Text>Focus</Text>
-        </TouchableOpacity>
-        
-      ),
-    });
-  }, []);
-
-  // Fonction pour mettre à jour la recherche
   const updateSearch = (searchText: string) => {
     setSearch(searchText);
   
-    // Filtrer les markers pour trouver ceux qui correspondent à la recherche
     const filtered = info.filter(marker => {
       const markerName = marker.name ? marker.name.toLowerCase() : '';
       return markerName.includes(searchText.toLowerCase());
@@ -74,22 +51,18 @@ export default function App() {
   
     setFilteredMarkers(filtered);
   
-    // Si un seul résultat, recentrer la carte sur ce musée
     if (filtered.length === 1) {
       const { latitude, longitude } = filtered[0];
       focusMap(latitude, longitude);
     }
   };
-  
-  
 
   const focusMap = (latitude: number, longitude: number) => {
-  mapRef.current?.animateCamera({
-    center: { latitude, longitude },
-    zoom: 15, // Ajuster le niveau de zoom selon tes préférences
-  }, { duration: 1000 }); // Ajuster la durée d’animation
-};
-
+    mapRef.current?.animateCamera({
+      center: { latitude, longitude },
+      zoom: 15,
+    }, { duration: 1000 });
+  };
 
   const onMarkerSelected = (marker: any) => {
     setSelectedMarker(marker);
@@ -101,57 +74,37 @@ export default function App() {
     setSelectedMarker(null);
   };
 
-  const mapStyle = [
-    {
-      featureType: 'poi',
-      elementType: 'labels',
-      stylers: [{ visibility: 'off' }],
-    },
-    {
-      featureType: 'poi.business',
-      stylers: [{ visibility: 'off' }],
-    },
-    {
-      featureType: 'poi.park',
-      stylers: [{ visibility: 'off' }],
-    },
-    {
-      featureType: 'poi.attraction',
-      stylers: [{ visibility: 'off' }],
-    },
-  ];
-
   const handleButtonPress = () => {
-    setPopupVisible(true); // Affiche la popup Ajout
+    setPopupVisible(true);
   };
 
   const closePopup = () => {
-    setPopupVisible(false); // Ferme la popup Ajout
+    setPopupVisible(false);
   };
 
   return (
     <View style={{ flex: 1 }}>
-      {/* Barre de recherche */}
       <SearchBar
-      placeholder="Rechercher..."
-      onChangeText={updateSearch} // Appelle la fonction updateSearch
-      value={search}
-      lightTheme
-      round
-      containerStyle={styles.searchBarContainer}
-      inputContainerStyle={styles.searchInputContainer}
-    />
-
+        placeholder="Rechercher..."
+        onChangeText={updateSearch}
+        value={search}
+        lightTheme
+        round
+        containerStyle={styles.searchBarContainer}
+        inputContainerStyle={styles.searchInputContainer}
+      />
 
       <MapView
         style={{ flex: 1 }}
         provider={PROVIDER_GOOGLE}
         initialRegion={INITIAL_REGION}
-        showsMyLocationButton={false}
-        customMapStyle={mapStyle}
+        customMapStyle={[
+          { featureType: 'poi', elementType: 'labels', stylers: [{ visibility: 'off' }] },
+          { featureType: 'poi.business', stylers: [{ visibility: 'off' }] },
+          { featureType: 'poi.park', stylers: [{ visibility: 'off' }] },
+          { featureType: 'poi.attraction', stylers: [{ visibility: 'off' }] },
+        ]}
         ref={mapRef}
-        toolbarEnabled={false}
-        mapPadding={{ top: 0, left: 50, right: 0, bottom: 20 }}
       >
         {filteredMarkers.map((marker, index) => (
           <Marker
@@ -221,18 +174,5 @@ const styles = StyleSheet.create({
   },
   searchInputContainer: {
     backgroundColor: '#fff',
-  },
-  focusButton: {
-    position: 'absolute',
-    bottom: 20,
-    left: 20,
-    backgroundColor: '#007AFF',
-    padding: 10,
-    borderRadius: 5,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.5,
-    shadowRadius: 2,
-    elevation: 5,
   },
 });
