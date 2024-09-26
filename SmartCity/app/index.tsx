@@ -7,6 +7,7 @@ import { info } from '../assets/infodata';
 import Navbar from '../components/navbar';
 import PlusInfo from '../components/plusinfo';
 import Ajout from '../components/ajout'; // Importer le composant Ajout
+import { SearchBar } from 'react-native-elements'; // Import de la Search Bar
 
 export default function App() {
   const [location, setLocation] = useState<null | { latitude: number; longitude: number }>(null);
@@ -14,6 +15,8 @@ export default function App() {
   const [selectedMarker, setSelectedMarker] = useState<any>(null);
   const [modalVisible, setModalVisible] = useState<boolean>(false);
   const [isPopupVisible, setPopupVisible] = useState<boolean>(false); // État pour gérer la visibilité de la popup Ajout
+  const [search, setSearch] = useState(''); // Initialiser dans app pour Search bar
+  const [filteredMarkers, setFilteredMarkers] = useState(info); // Initialisation avec les markers
 
   const mapRef = useRef<any>();
   const navigation = useNavigation();
@@ -52,6 +55,19 @@ export default function App() {
       ),
     });
   }, []);
+
+  // Fonction pour mettre à jour la recherche
+  const updateSearch = (searchText: string) => {
+    setSearch(searchText);
+
+    // Filtrer les markers par nom
+    const filtered = info.filter(marker => {
+      const markerName = marker.name ? marker.name.toLowerCase() : '';
+      return markerName.includes(searchText.toLowerCase());
+    });
+
+    setFilteredMarkers(filtered);
+  };
 
   const focusMap = () => {
     const là = {
@@ -103,6 +119,17 @@ export default function App() {
 
   return (
     <View style={{ flex: 1 }}>
+      {/* Barre de recherche */}
+      <SearchBar
+        placeholder="Rechercher..."
+        onChangeText={updateSearch}
+        value={search}
+        lightTheme
+        round
+        containerStyle={styles.searchBarContainer}
+        inputContainerStyle={styles.searchInputContainer}
+      />
+
       <MapView
         style={{ flex: 1 }}
         provider={PROVIDER_GOOGLE}
@@ -113,8 +140,13 @@ export default function App() {
         toolbarEnabled={false}
         mapPadding={{ top: 0, left: 50, right: 0, bottom: 20 }}
       >
-        {info.map((marker, index) => (
-          <Marker key={index} coordinate={marker} onPress={() => onMarkerSelected(marker)} />
+        {filteredMarkers.map((marker, index) => (
+          <Marker
+            key={index}
+            coordinate={marker}
+            title={marker.name}
+            onPress={() => onMarkerSelected(marker)}
+          />
         ))}
 
         {location && (
@@ -129,18 +161,14 @@ export default function App() {
         )}
       </MapView>
 
-      {/* Navigation Bar (si applicable) */}
       <Navbar />
 
-      {/* Utilisation du composant PlusInfo pour afficher la popup */}
       <PlusInfo marker={selectedMarker} modalVisible={modalVisible} closeModal={closeModal} />
 
-      {/* Bouton rond avec icône */}
       <TouchableOpacity style={styles.roundButton} onPress={handleButtonPress}>
         <Image source={require('../assets/images/icon.png')} style={styles.icon} />
       </TouchableOpacity>
 
-      {/* Utilisation du composant Ajout pour afficher la popup */}
       <Ajout isVisible={isPopupVisible} onClose={closePopup} />
     </View>
   );
@@ -167,5 +195,18 @@ const styles = StyleSheet.create({
     width: 30,
     height: 30,
     resizeMode: 'contain',
+  },
+  searchBarContainer: {
+    backgroundColor: 'transparent',
+    borderBottomColor: 'transparent',
+    borderTopColor: 'transparent',
+    position: 'absolute',
+    top: 10,
+    left: 10,
+    right: 10,
+    zIndex: 1,
+  },
+  searchInputContainer: {
+    backgroundColor: '#fff',
   },
 });
