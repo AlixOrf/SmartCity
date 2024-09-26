@@ -6,7 +6,7 @@ import { useNavigation } from '@react-navigation/native';
 import { info } from '../assets/infodata';
 import Navbar from '../components/navbar';
 import PlusInfo from '../components/plusinfo';
-import Ajout from '../components/ajout'; // Importer le composant Ajout
+import Ajout from '../components/ajout';
 
 export default function App() {
   const [location, setLocation] = useState<null | { latitude: number; longitude: number }>(null);
@@ -134,12 +134,7 @@ export default function App() {
       <Navbar />
 
       {/* Utilisation du composant PlusInfo pour afficher la popup */}
-      <PlusInfo marker={selectedMarker} modalVisible={modalVisible} closeModal={closeModal} />
-
-      {/* Bouton rond avec icône */}
-      <TouchableOpacity style={styles.roundButton} onPress={handleButtonPress}>
-        <Image source={require('../assets/images/icon.png')} style={styles.icon} />
-      </TouchableOpacity>
+      <PlusInfo marker={selectedMarker} modalVisible={modalVisible} closeModal={closeModal} handleButtonPress={handleButtonPress} />
 
       {/* Utilisation du composant Ajout pour afficher la popup */}
       <Ajout isVisible={isPopupVisible} onClose={closePopup} />

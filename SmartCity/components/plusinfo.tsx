@@ -1,14 +1,16 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, Modal, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import Ajout from '../components/ajout'; 
 
 interface PlusInfoProps {
   marker: any;
   modalVisible: boolean;
   closeModal: () => void;
+  handleButtonPress: () => void; // Nouvelle prop pour gérer la popup Ajout
 }
 
-const PlusInfo: React.FC<PlusInfoProps> = ({ marker, modalVisible, closeModal }) => {
+const PlusInfo: React.FC<PlusInfoProps> = ({ marker, modalVisible, closeModal, handleButtonPress }) => {
   const navigation = useNavigation();
 
   return (
@@ -23,6 +25,12 @@ const PlusInfo: React.FC<PlusInfoProps> = ({ marker, modalVisible, closeModal })
                 Téléphone: {marker.téléphone}{"\n"}
                 Site Internet: {marker.site}
               </Text>
+
+              {/* Bouton pour afficher la popup Ajout */}
+              <TouchableOpacity style={styles.addButton} onPress={handleButtonPress}>
+                <Text style={styles.addButtonText}>Ajouter Information</Text>
+              </TouchableOpacity>
+
               <TouchableOpacity onPress={closeModal}>
                 <Text style={styles.closeText}>Fermer</Text>
               </TouchableOpacity>
@@ -56,10 +64,16 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginBottom: 20,
   },
-  moreInfoText: {
+  addButton: {
+    backgroundColor: '#007AFF',
+    padding: 10,
+    borderRadius: 5,
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  addButtonText: {
+    color: 'white',
     fontSize: 16,
-    color: 'blue',
-    marginBottom: 20,
   },
   closeText: {
     fontSize: 16,
