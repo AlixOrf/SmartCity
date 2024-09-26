@@ -7,6 +7,7 @@ import Navbar from '../components/navbar';
 import PlusInfo from '../components/plusinfo';
 import Ajout from '../components/ajout'; // Importer le composant Ajout
 import { SearchBar } from 'react-native-elements'; // Import de la Search Bar
+import { useNavigation } from '@react-navigation/native'; // Import pour gérer les options de navigation
 
 export default function App() {
   const [location, setLocation] = useState<null | { latitude: number; longitude: number }>(null);
@@ -17,6 +18,7 @@ export default function App() {
   const [filteredMarkers, setFilteredMarkers] = useState(info);
 
   const mapRef = useRef<any>();
+  const navigation = useNavigation(); // Hook pour accéder à la navigation
 
   const INITIAL_REGION = {
     latitude: 48.8566,
@@ -24,6 +26,13 @@ export default function App() {
     latitudeDelta: 2,
     longitudeDelta: 2,
   };
+
+  useEffect(() => {
+    // Masquer le header par défaut
+    navigation.setOptions({
+      headerShown: false,
+    });
+  }, [navigation]);
 
   useEffect(() => {
     (async () => {
@@ -43,14 +52,14 @@ export default function App() {
 
   const updateSearch = (searchText: string) => {
     setSearch(searchText);
-  
+
     const filtered = info.filter(marker => {
       const markerName = marker.name ? marker.name.toLowerCase() : '';
       return markerName.includes(searchText.toLowerCase());
     });
-  
+
     setFilteredMarkers(filtered);
-  
+
     if (filtered.length === 1) {
       const { latitude, longitude } = filtered[0];
       focusMap(latitude, longitude);
