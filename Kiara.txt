@@ -1,0 +1,5 @@
+26/09/2024 - 11:07
+git pull de alix
+
+26/09/2024 - 11:27
+npm install react-native-elements
