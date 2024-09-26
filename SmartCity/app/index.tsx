@@ -1,17 +1,19 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, TouchableOpacity, Alert, StyleSheet, Dimensions } from 'react-native';
+import { View, Text, TouchableOpacity, Image, StyleSheet, Alert } from 'react-native';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import * as Location from 'expo-location';
 import { useNavigation } from '@react-navigation/native';
 import { info } from '../assets/infodata';
 import Navbar from '../components/navbar';
-import PlusInfo from '../components/plusinfo'; 
+import PlusInfo from '../components/plusinfo';
+import Ajout from '../components/ajout'; // Importer le composant Ajout
 
 export default function App() {
   const [location, setLocation] = useState<null | { latitude: number; longitude: number }>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [selectedMarker, setSelectedMarker] = useState<any>(null);
   const [modalVisible, setModalVisible] = useState<boolean>(false);
+  const [isPopupVisible, setPopupVisible] = useState<boolean>(false); // État pour gérer la visibilité de la popup Ajout
 
   const mapRef = useRef<any>();
   const navigation = useNavigation();
@@ -91,6 +93,14 @@ export default function App() {
     },
   ];
 
+  const handleButtonPress = () => {
+    setPopupVisible(true); // Affiche la popup Ajout
+  };
+
+  const closePopup = () => {
+    setPopupVisible(false); // Ferme la popup Ajout
+  };
+
   return (
     <View style={{ flex: 1 }}>
       <MapView
@@ -125,6 +135,38 @@ export default function App() {
 
       {/* Utilisation du composant PlusInfo pour afficher la popup */}
       <PlusInfo marker={selectedMarker} modalVisible={modalVisible} closeModal={closeModal} />
+
+      {/* Bouton rond avec icône */}
+      <TouchableOpacity style={styles.roundButton} onPress={handleButtonPress}>
+        <Image source={require('../assets/images/icon.png')} style={styles.icon} />
+      </TouchableOpacity>
+
+      {/* Utilisation du composant Ajout pour afficher la popup */}
+      <Ajout isVisible={isPopupVisible} onClose={closePopup} />
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  roundButton: {
+    position: 'absolute',
+    top: 15,
+    right: 10,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: '#007AFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.5,
+    shadowRadius: 2,
+    elevation: 5,
+  },
+  icon: {
+    width: 30,
+    height: 30,
+    resizeMode: 'contain',
+  },
+});

@@ -19,11 +19,10 @@ const PlusInfo: React.FC<PlusInfoProps> = ({ marker, modalVisible, closeModal })
             <>
               <Text style={styles.modalTitle}>{marker.name}</Text>
               <Text style={styles.modalText}>
-                Latitude: {marker.latitude}, Longitude: {marker.longitude}
+                Adresse : {marker.adresse}{"\n"}
+                Téléphone: {marker.téléphone}{"\n"}
+                Site Internet: {marker.site}
               </Text>
-              <TouchableOpacity onPress={() => navigation.navigate('PlusInfo', { marker })}>
-                <Text style={styles.moreInfoText}>Plus d'infos</Text>
-              </TouchableOpacity>
               <TouchableOpacity onPress={closeModal}>
                 <Text style={styles.closeText}>Fermer</Text>
               </TouchableOpacity>
