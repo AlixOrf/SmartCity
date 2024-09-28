@@ -1,11 +1,9 @@
-import React, { useState } from 'react'; 
-import { View, Button, Text, StyleSheet, Modal, ScrollView } from 'react-native';
-// Importation de Supabase
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, Modal, ScrollView, TouchableOpacity } from 'react-native';
 import { createClient } from '@supabase/supabase-js';
 
-// Remplacez ces valeurs par les vôtres
 const supabaseUrl = 'https://sdjpclijdqwtcnummjuo.supabase.co';
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNkanBjbGlqZHF3dGNudW1tanVvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mjc1MjAwNDMsImV4cCI6MjA0MzA5NjA0M30.MudPq_diGL_YiK46603IO24opKgUbZIG8QEV8GZxRfw';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'; // Masqué pour concision
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 interface MuseumData {
@@ -41,9 +39,8 @@ const Ajout: React.FC<AjoutProps> = ({ isVisible, onSave, onClose, name }) => {
       Réduction: reduction,
     };
 
-    // Enregistrement des données dans Supabase
     const { data, error } = await supabase
-      .from('museums') // Assurez-vous que la table s'appelle 'museums'
+      .from('museums')
       .insert([museumData]);
 
     if (error) {
@@ -64,38 +61,158 @@ const Ajout: React.FC<AjoutProps> = ({ isVisible, onSave, onClose, name }) => {
 
             <Text style={styles.label}>Temps d'attente</Text>
             <View style={styles.buttonGroup}>
-              <Button title="- de 30min" onPress={() => setWaitingTime('- de 30min')} />
-              <Button title="30-60min" onPress={() => setWaitingTime('30-60min')} />
+              <TouchableOpacity
+                style={[
+                  styles.button, 
+                  waitingTime === '- de 30min' && styles.buttonSelected
+                ]}
+                onPress={() => setWaitingTime('- de 30min')}
+              >
+                <Text style={waitingTime === '- de 30min' ? styles.buttonTextSelected : styles.buttonText}>
+                  - de 30min
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[
+                  styles.button, 
+                  waitingTime === '30-60min' && styles.buttonSelected
+                ]}
+                onPress={() => setWaitingTime('30-60min')}
+              >
+                <Text style={waitingTime === '30-60min' ? styles.buttonTextSelected : styles.buttonText}>
+                  30-60min
+                </Text>
+              </TouchableOpacity>
             </View>
 
             <Text style={styles.label}>Fréquentation</Text>
             <View style={styles.buttonGroup}>
-              <Button title="Peu" onPress={() => setFrequentation('Peu')} />
-              <Button title="Modérée" onPress={() => setFrequentation('Modérée')} />
-              <Button title="Beaucoup" onPress={() => setFrequentation('Beaucoup')} />
+              <TouchableOpacity
+                style={[
+                  styles.button,
+                  frequentationValue === 'Peu' && styles.buttonSelected
+                ]}
+                onPress={() => setFrequentation('Peu')}
+              >
+                <Text style={frequentationValue === 'Peu' ? styles.buttonTextSelected : styles.buttonText}>
+                  Peu
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[
+                  styles.button,
+                  frequentationValue === 'Modérée' && styles.buttonSelected
+                ]}
+                onPress={() => setFrequentation('Modérée')}
+              >
+                <Text style={frequentationValue === 'Modérée' ? styles.buttonTextSelected : styles.buttonText}>
+                  Modérée
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[
+                  styles.button,
+                  frequentationValue === 'Beaucoup' && styles.buttonSelected
+                ]}
+                onPress={() => setFrequentation('Beaucoup')}
+              >
+                <Text style={frequentationValue === 'Beaucoup' ? styles.buttonTextSelected : styles.buttonText}>
+                  Beaucoup
+                </Text>
+              </TouchableOpacity>
             </View>
 
             <Text style={styles.label}>Fermeture</Text>
             <View style={styles.buttonGroup}>
-              <Button title="Oui" onPress={() => setFermeture(true)} />
-              <Button title="Non" onPress={() => setFermeture(false)} />
+              <TouchableOpacity
+                style={[
+                  styles.button,
+                  fermeture && styles.buttonSelected
+                ]}
+                onPress={() => setFermeture(true)}
+              >
+                <Text style={fermeture ? styles.buttonTextSelected : styles.buttonText}>
+                  Oui
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[
+                  styles.button,
+                  !fermeture && styles.buttonSelected
+                ]}
+                onPress={() => setFermeture(false)}
+              >
+                <Text style={!fermeture ? styles.buttonTextSelected : styles.buttonText}>
+                  Non
+                </Text>
+              </TouchableOpacity>
             </View>
 
             <Text style={styles.label}>Accident</Text>
             <View style={styles.buttonGroup}>
-              <Button title="Oui" onPress={() => setAccident(true)} />
-              <Button title="Non" onPress={() => setAccident(false)} />
+              <TouchableOpacity
+                style={[
+                  styles.button,
+                  accident && styles.buttonSelected
+                ]}
+                onPress={() => setAccident(true)}
+              >
+                <Text style={accident ? styles.buttonTextSelected : styles.buttonText}>
+                  Oui
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[
+                  styles.button,
+                  !accident && styles.buttonSelected
+                ]}
+                onPress={() => setAccident(false)}
+              >
+                <Text style={!accident ? styles.buttonTextSelected : styles.buttonText}>
+                  Non
+                </Text>
+              </TouchableOpacity>
             </View>
 
             <Text style={styles.label}>Réduction</Text>
             <View style={styles.buttonGroup}>
-              <Button title="Oui" onPress={() => setReduction(true)} />
-              <Button title="Non" onPress={() => setReduction(false)} />
+              <TouchableOpacity
+                style={[
+                  styles.button,
+                  reduction && styles.buttonSelected
+                ]}
+                onPress={() => setReduction(true)}
+              >
+                <Text style={reduction ? styles.buttonTextSelected : styles.buttonText}>
+                  Oui
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[
+                  styles.button,
+                  !reduction && styles.buttonSelected
+                ]}
+                onPress={() => setReduction(false)}
+              >
+                <Text style={!reduction ? styles.buttonTextSelected : styles.buttonText}>
+                  Non
+                </Text>
+              </TouchableOpacity>
             </View>
 
             <View style={styles.buttonGroup}>
-              <Button title="Enregistrer" onPress={handleSave} />
-              <Button title="Annuler" onPress={onClose} />
+              <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
+                <Text style={styles.saveButtonText}>Enregistrer</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.cancelButton} onPress={onClose}>
+                <Text style={styles.cancelButtonText}>Annuler</Text>
+              </TouchableOpacity>
             </View>
           </ScrollView>
         </View>
@@ -108,15 +225,15 @@ const styles = StyleSheet.create({
   modalContainer: {
     flex: 1,
     justifyContent: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
     alignItems: 'flex-end',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)', // Arrière-plan semi-transparent
   },
   container: {
     flex: 1,
-    backgroundColor: 'white',
+    backgroundColor: '#FFFFF1',
     padding: 20,
-    borderTopLeftRadius: 10,
-    borderTopRightRadius: 10,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
     width: '70%',
   },
   scrollViewContent: {
@@ -125,12 +242,49 @@ const styles = StyleSheet.create({
   },
   label: {
     fontWeight: 'bold',
+    color: '#2F494F',
     marginVertical: 10,
+    fontSize: 16,
   },
   buttonGroup: {
     flexDirection: 'row',
     justifyContent: 'space-around',
     marginVertical: 10,
+  },
+  button: {
+    padding: 10,
+    borderRadius: 8,
+    backgroundColor: '#ADB6BC',
+  },
+  buttonSelected: {
+    backgroundColor: '#6FC18A', // Vert pour les boutons sélectionnés
+  },
+  buttonText: {
+    color: '#2F494F', // Texte sombre pour les boutons non sélectionnés
+  },
+  buttonTextSelected: {
+    color: '#FFFFF1', // Texte clair pour les boutons sélectionnés
+  },
+  saveButton: {
+    backgroundColor: '#6FC18A',
+    padding: 15,
+    borderRadius: 8,
+  },
+  saveButtonText: {
+    color: '#FFFFF1',
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+  cancelButton: {
+    backgroundColor: '#E9534E',
+    padding: 15,
+    borderRadius: 8,
+    marginTop: 10,
+  },
+  cancelButtonText: {
+    color: '#FFFFF1',
+    fontWeight: 'bold',
+    textAlign: 'center',
   },
 });
 

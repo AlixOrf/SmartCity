@@ -177,4 +177,5 @@ const styles = StyleSheet.create({
   searchInputContainer: {
     backgroundColor: '#fff',
   },
+  
 });
