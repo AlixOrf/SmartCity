@@ -1,22 +1,23 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, TouchableOpacity, Image, StyleSheet, Alert } from 'react-native';
+import { View, TouchableOpacity, Image, StyleSheet, Alert } from 'react-native';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import * as Location from 'expo-location';
-import { useNavigation } from '@react-navigation/native';
 import { info } from '../assets/infodata';
-import Navbar from '../components/navbar';
 import PlusInfo from '../components/plusinfo';
-import Ajout from '../components/ajout';
+import Ajout from '../components/ajout'; 
+import { SearchBar } from 'react-native-elements'; 
+import { useNavigation } from '@react-navigation/native'; 
 
 export default function App() {
   const [location, setLocation] = useState<null | { latitude: number; longitude: number }>(null);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [selectedMarker, setSelectedMarker] = useState<any>(null);
   const [modalVisible, setModalVisible] = useState<boolean>(false);
-  const [isPopupVisible, setPopupVisible] = useState<boolean>(false); // État pour gérer la visibilité de la popup Ajout
+  const [isPopupVisible, setPopupVisible] = useState<boolean>(false);
+  const [search, setSearch] = useState('');
+  const [filteredMarkers, setFilteredMarkers] = useState(info);
 
   const mapRef = useRef<any>();
-  const navigation = useNavigation();
+  const navigation = useNavigation(); // Hook pour accéder à la navigation
 
   const INITIAL_REGION = {
     latitude: 48.8566,
@@ -26,10 +27,17 @@ export default function App() {
   };
 
   useEffect(() => {
+    // Masquer le header par défaut
+    navigation.setOptions({
+      headerShown: false,
+    });
+  }, [navigation]);
+
+  useEffect(() => {
     (async () => {
       let { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
-        setErrorMsg('Permission to access location was denied');
+        Alert.alert('Permission to access location was denied');
         return;
       }
 
@@ -41,26 +49,27 @@ export default function App() {
     })();
   }, []);
 
-  useEffect(() => {
-    navigation.setOptions({
-      headerRight: () => (
-        <TouchableOpacity onPress={focusMap}>
-          <View style={{ padding: 10 }}>
-            <Text>Focus</Text>
-          </View>
-        </TouchableOpacity>
-      ),
-    });
-  }, []);
+  const updateSearch = (searchText: string) => {
+    setSearch(searchText);
 
-  const focusMap = () => {
-    const là = {
-      latitude: 48.8566,
-      longitude: 2.3522,
-      latitudeDelta: 2,
-      longitudeDelta: 2,
-    };
-    mapRef.current?.animateCamera({ center: là, zoom: 10 }, { duration: 3000 });
+    const filtered = info.filter(marker => {
+      const markerName = marker.name ? marker.name.toLowerCase() : '';
+      return markerName.includes(searchText.toLowerCase());
+    });
+
+    setFilteredMarkers(filtered);
+
+    if (filtered.length === 1) {
+      const { latitude, longitude } = filtered[0];
+      focusMap(latitude, longitude);
+    }
+  };
+
+  const focusMap = (latitude: number, longitude: number) => {
+    mapRef.current?.animateCamera({
+      center: { latitude, longitude },
+      zoom: 15,
+    }, { duration: 1000 });
   };
 
   const onMarkerSelected = (marker: any) => {
@@ -73,48 +82,45 @@ export default function App() {
     setSelectedMarker(null);
   };
 
-  const mapStyle = [
-    {
-      featureType: 'poi',
-      elementType: 'labels',
-      stylers: [{ visibility: 'off' }],
-    },
-    {
-      featureType: 'poi.business',
-      stylers: [{ visibility: 'off' }],
-    },
-    {
-      featureType: 'poi.park',
-      stylers: [{ visibility: 'off' }],
-    },
-    {
-      featureType: 'poi.attraction',
-      stylers: [{ visibility: 'off' }],
-    },
-  ];
-
   const handleButtonPress = () => {
-    setPopupVisible(true); // Affiche la popup Ajout
+    setPopupVisible(true); 
   };
 
   const closePopup = () => {
-    setPopupVisible(false); // Ferme la popup Ajout
+    setPopupVisible(false); 
   };
+
 
   return (
     <View style={{ flex: 1 }}>
+      <SearchBar
+        placeholder="Rechercher..."
+        onChangeText={updateSearch}
+        value={search}
+        lightTheme
+        round
+        containerStyle={styles.searchBarContainer}
+        inputContainerStyle={styles.searchInputContainer}
+      />
+
       <MapView
         style={{ flex: 1 }}
         provider={PROVIDER_GOOGLE}
         initialRegion={INITIAL_REGION}
-        showsMyLocationButton={false}
-        customMapStyle={mapStyle}
+        customMapStyle={[
+          { featureType: 'poi', elementType: 'labels', stylers: [{ visibility: 'off' }] },
+          { featureType: 'poi.business', stylers: [{ visibility: 'off' }] },
+          { featureType: 'poi.park', stylers: [{ visibility: 'off' }] },
+          { featureType: 'poi.attraction', stylers: [{ visibility: 'off' }] },
+        ]}
         ref={mapRef}
-        toolbarEnabled={false}
-        mapPadding={{ top: 0, left: 50, right: 0, bottom: 20 }}
       >
-        {info.map((marker, index) => (
-          <Marker key={index} coordinate={marker} onPress={() => onMarkerSelected(marker)} />
+        {filteredMarkers.map((marker, index) => (
+          <Marker
+            key={index}
+            coordinate={marker}
+            onPress={() => onMarkerSelected(marker)}
+          />
         ))}
 
         {location && (
@@ -129,14 +135,8 @@ export default function App() {
         )}
       </MapView>
 
-      {errorMsg ? <Text>{errorMsg}</Text> : null}
+      <PlusInfo marker={selectedMarker} modalVisible={modalVisible} closeModal={closeModal} />
 
-      <Navbar />
-
-      {/* Utilisation du composant PlusInfo pour afficher la popup */}
-      <PlusInfo marker={selectedMarker} modalVisible={modalVisible} closeModal={closeModal} handleButtonPress={handleButtonPress} />
-
-      {/* Utilisation du composant Ajout pour afficher la popup */}
       <Ajout isVisible={isPopupVisible} onClose={closePopup} />
     </View>
   );
@@ -163,5 +163,18 @@ const styles = StyleSheet.create({
     width: 30,
     height: 30,
     resizeMode: 'contain',
+  },
+  searchBarContainer: {
+    backgroundColor: 'transparent',
+    borderBottomColor: 'transparent',
+    borderTopColor: 'transparent',
+    position: 'absolute',
+    top: 40,
+    left: 10,
+    right: 10,
+    zIndex: 1,
+  },
+  searchInputContainer: {
+    backgroundColor: '#fff',
   },
 });

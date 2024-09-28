@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, Modal, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import Ajout from '../components/ajout'; 
@@ -12,6 +12,15 @@ interface PlusInfoProps {
 
 const PlusInfo: React.FC<PlusInfoProps> = ({ marker, modalVisible, closeModal, handleButtonPress }) => {
   const navigation = useNavigation();
+  const [isAjoutVisible, setIsAjoutVisible] = useState(false); // Nouvel état pour gérer l'affichage de Ajout
+
+  const openAjout = () => {
+    setIsAjoutVisible(true); // Ouvre Ajout
+  };
+
+  const closeAjout = () => {
+    setIsAjoutVisible(false); // Ferme Ajout
+  };
 
   return (
     <Modal animationType="slide" transparent={true} visible={modalVisible} onRequestClose={closeModal}>
@@ -26,14 +35,23 @@ const PlusInfo: React.FC<PlusInfoProps> = ({ marker, modalVisible, closeModal, h
                 Site Internet: {marker.site}
               </Text>
 
-              {/* Bouton pour afficher la popup Ajout */}
-              <TouchableOpacity style={styles.addButton} onPress={handleButtonPress}>
+              <TouchableOpacity style={styles.addButton} onPress={openAjout}>
                 <Text style={styles.addButtonText}>Ajouter Information</Text>
               </TouchableOpacity>
 
               <TouchableOpacity onPress={closeModal}>
                 <Text style={styles.closeText}>Fermer</Text>
               </TouchableOpacity>
+
+              {/* Affichage conditionnel de Ajout */}
+              {isAjoutVisible && (
+                <Ajout
+                  isVisible={isAjoutVisible} // Utilise isAjoutVisible pour gérer l'affichage
+                  onSave={(data) => { console.log('Données ajoutées:', data); closeAjout(); }} // Fonction de sauvegarde
+                  onClose={closeAjout} // Fonction de fermeture
+                  name={marker.name} // Passe le nom du marker
+                />
+              )}
             </>
           ) : null}
         </View>

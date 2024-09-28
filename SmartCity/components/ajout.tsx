@@ -1,155 +1,136 @@
-import React, { useEffect, useRef } from 'react';
-import { Modal, View, Text, TouchableOpacity, StyleSheet, Animated, Easing, Dimensions, ScrollView } from 'react-native';
+import React, { useState } from 'react'; 
+import { View, Button, Text, StyleSheet, Modal, ScrollView } from 'react-native';
+// Importation de Supabase
+import { createClient } from '@supabase/supabase-js';
+
+// Remplacez ces valeurs par les vôtres
+const supabaseUrl = 'https://sdjpclijdqwtcnummjuo.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNkanBjbGlqZHF3dGNudW1tanVvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mjc1MjAwNDMsImV4cCI6MjA0MzA5NjA0M30.MudPq_diGL_YiK46603IO24opKgUbZIG8QEV8GZxRfw';
+const supabase = createClient(supabaseUrl, supabaseKey);
+
+interface MuseumData {
+  name: string;
+  "temps d’attente": string;
+  Fréquentation: string;
+  Fermeture: boolean;
+  Accident: boolean;
+  Réduction: boolean;
+}
 
 interface AjoutProps {
   isVisible: boolean;
+  onSave: (data: MuseumData) => void;
   onClose: () => void;
+  name: string; // Nouvelle prop pour le nom
 }
 
-const Ajout: React.FC<AjoutProps> = ({ isVisible, onClose }) => {
-  const slideAnim = useRef(new Animated.Value(Dimensions.get('window').width)).current;
+const Ajout: React.FC<AjoutProps> = ({ isVisible, onSave, onClose, name }) => {
+  const [waitingTime, setWaitingTime] = useState('- de 30min');
+  const [frequentationValue, setFrequentation] = useState('Peu');
+  const [fermeture, setFermeture] = useState(false);
+  const [accident, setAccident] = useState(false);
+  const [reduction, setReduction] = useState(false);
 
-  useEffect(() => {
-    if (isVisible) {
-      Animated.timing(slideAnim, {
-        toValue: 0,
-        duration: 300,
-        useNativeDriver: true,
-        easing: Easing.ease,
-      }).start();
+  const handleSave = async () => {
+    const museumData: MuseumData = {
+      name,
+      "temps d’attente": waitingTime,
+      Fréquentation: frequentationValue,
+      Fermeture: fermeture,
+      Accident: accident,
+      Réduction: reduction,
+    };
+
+    // Enregistrement des données dans Supabase
+    const { data, error } = await supabase
+      .from('museums') // Assurez-vous que la table s'appelle 'museums'
+      .insert([museumData]);
+
+    if (error) {
+      console.error('Erreur lors de l\'insertion:', error);
     } else {
-      Animated.timing(slideAnim, {
-        toValue: Dimensions.get('window').width,
-        duration: 300,
-        useNativeDriver: true,
-        easing: Easing.ease,
-      }).start();
+      console.log('Données sauvegardées avec succès:', data);
+      onSave(museumData);
+      onClose();
     }
-  }, [isVisible]);
+  };
 
   return (
-    <Modal transparent={true} visible={isVisible} animationType="none" onRequestClose={onClose}>
-      <View style={styles.modalOverlay}>
-        <Animated.View style={[styles.modalContent, { transform: [{ translateX: slideAnim }] }]}>
+    <Modal visible={isVisible} animationType="slide" transparent={true}>
+      <View style={styles.modalContainer}>
+        <View style={styles.container}>
           <ScrollView contentContainerStyle={styles.scrollViewContent}>
-            <Text style={styles.modalTitle}>Comment se passe votre visite ?</Text>
+            <Text style={styles.label}>Nom du musée: {name}</Text>
 
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Temps d'attente</Text>
-              <TouchableOpacity style={styles.buttonLightGray}>
-                <Text style={styles.buttonText}>- de 30min</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.buttonLightGray}>
-                <Text style={styles.buttonText}>30min à 3H</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.buttonLightGray}>
-                <Text style={styles.buttonText}>+ de 3H</Text>
-              </TouchableOpacity>
+            <Text style={styles.label}>Temps d'attente</Text>
+            <View style={styles.buttonGroup}>
+              <Button title="- de 30min" onPress={() => setWaitingTime('- de 30min')} />
+              <Button title="30-60min" onPress={() => setWaitingTime('30-60min')} />
             </View>
 
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Fréquentation</Text>
-              <TouchableOpacity style={styles.buttonLightGray}>
-                <Text style={styles.buttonText}>Peu</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.buttonLightGray}>
-                <Text style={styles.buttonText}>Moyen</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.buttonLightGray}>
-                <Text style={styles.buttonText}>Important</Text>
-              </TouchableOpacity>
+            <Text style={styles.label}>Fréquentation</Text>
+            <View style={styles.buttonGroup}>
+              <Button title="Peu" onPress={() => setFrequentation('Peu')} />
+              <Button title="Modérée" onPress={() => setFrequentation('Modérée')} />
+              <Button title="Beaucoup" onPress={() => setFrequentation('Beaucoup')} />
             </View>
 
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Fermeture</Text>
-              <TouchableOpacity style={styles.buttonLightGray}>
-                <Text style={styles.buttonText}>Signalé</Text>
-              </TouchableOpacity>
+            <Text style={styles.label}>Fermeture</Text>
+            <View style={styles.buttonGroup}>
+              <Button title="Oui" onPress={() => setFermeture(true)} />
+              <Button title="Non" onPress={() => setFermeture(false)} />
             </View>
 
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Accident</Text>
-              <TouchableOpacity style={styles.buttonLightGray}>
-                <Text style={styles.buttonText}>Signalé</Text>
-              </TouchableOpacity>
+            <Text style={styles.label}>Accident</Text>
+            <View style={styles.buttonGroup}>
+              <Button title="Oui" onPress={() => setAccident(true)} />
+              <Button title="Non" onPress={() => setAccident(false)} />
             </View>
 
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Réduction</Text>
-              <TouchableOpacity style={styles.buttonLightGray}>
-                <Text style={styles.buttonText}>Signalé</Text>
-              </TouchableOpacity>
+            <Text style={styles.label}>Réduction</Text>
+            <View style={styles.buttonGroup}>
+              <Button title="Oui" onPress={() => setReduction(true)} />
+              <Button title="Non" onPress={() => setReduction(false)} />
             </View>
 
-            <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-              <Text style={styles.closeButtonText}>Fermer</Text>
-            </TouchableOpacity>
+            <View style={styles.buttonGroup}>
+              <Button title="Enregistrer" onPress={handleSave} />
+              <Button title="Annuler" onPress={onClose} />
+            </View>
           </ScrollView>
-        </Animated.View>
+        </View>
       </View>
     </Modal>
   );
 };
 
 const styles = StyleSheet.create({
-  modalOverlay: {
+  modalContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'flex-end',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)', // Arrière-plan semi-transparent
   },
-  modalContent: {
-    width: 250,
-    height: '100%',
-    padding: 20,
+  container: {
+    flex: 1,
     backgroundColor: 'white',
+    padding: 20,
     borderTopLeftRadius: 10,
-    borderBottomLeftRadius: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.5,
-    shadowRadius: 2,
-    elevation: 5,
+    borderTopRightRadius: 10,
+    width: '70%',
   },
   scrollViewContent: {
-    paddingBottom: 20, // Add padding to avoid content cutting off at the bottom
+    flexGrow: 1,
+    justifyContent: 'center',
   },
-  modalTitle: {
-    fontSize: 20,
+  label: {
     fontWeight: 'bold',
-    marginBottom: 20,
-    textAlign: 'center',
+    marginVertical: 10,
   },
-  section: {
-    marginBottom: 20,
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginBottom: 10,
-  },
-  buttonLightGray: {
-    backgroundColor: '#D3D3D3',
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 5,
-    marginBottom: 10,
-  },
-  buttonText: {
-    color: '#333',
-    fontSize: 16,
-    textAlign: 'center',
-  },
-  closeButton: {
-    backgroundColor: '#007AFF',
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 5,
-    alignSelf: 'center',
-  },
-  closeButtonText: {
-    color: 'white',
-    fontSize: 16,
+  buttonGroup: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginVertical: 10,
   },
 });
 

@@ -11,3 +11,10 @@ lancement app --> npx expo
 python3 -m venv .venv
 .venv\Scripts\activate
 python3 -m pip install -r requirements.txt
+
+28/09 12H00 --> Base de données
+cd SmartCity
+npm install @supabase/supabase-js
+
+14H30 --> SearchBar de Kiara
+npm install react-native-elements
